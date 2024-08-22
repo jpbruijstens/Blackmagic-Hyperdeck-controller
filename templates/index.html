@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyperdeck Control</title>
+    <link rel="stylesheet" type="text/css" href="static/style.css">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Hyperdeck Control</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Clip Number</th>
+                <th>Filename</th>
+                <th>Format</th>
+                <th>Resolution</th>
+                <th>Duration</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for clip in clips %}
+            <tr>
+                <td>{{ clip.clip_number }}</td>
+                <td>{{ clip.filename }}</td>
+                <td>{{ clip.format }}</td>
+                <td>{{ clip.resolution }}</td>
+                <td>{{ clip.duration }}</td>
+                <td>
+                    <button onclick="playClip('{{ clip.filename }}')">Play</button>
+                    <button onclick="addToList('{{ clip.clip_number }}', '{{ clip.filename }}')">Add to List</button>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6">No clips found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        function playClip(filename) {
+            $.post('/play', {filename: filename}, function(response) {
+                if (response.success) {
+                    alert('Playing clip ' + filename);
+                } else {
+                    alert('Failed to play clip ' + filename);
+                }
+            });
+        }
+
+        function addToList(clipNumber, filename) {
+            $.post('/add_to_list', {clip_number: clipNumber, filename: filename}, function(response) {
+                if (response.success) {
+                    alert('Added clip ' + clipNumber + ' to list');
+                } else {
+                    alert('Failed to add clip ' + clipNumber + ' to list');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
