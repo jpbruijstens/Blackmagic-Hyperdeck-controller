@@ -79,10 +79,27 @@
     <!-- JavaScript -->
     <script>
         $(document).ready(function(){
+            function adjustMainContentMargin() {
+                var bannerHeight = $('.top-banner').outerHeight();
+                $('.main-content').css('margin-top', bannerHeight + 'px');
+            }
+
+            // Call the function on page load
+            adjustMainContentMargin();
+
+            // Call the function whenever the window is resized
+            $(window).resize(function() {
+                adjustMainContentMargin();
+            });
+            
+            // Modify the displayMessage function to adjust margin when message changes
             function displayMessage(msg, isError) {
                 var messageDiv = $('#message');
                 messageDiv.css('color', isError ? 'red' : 'green');
                 messageDiv.text(msg);
+
+                // Adjust the main content margin
+                adjustMainContentMargin();
             }
 
             // Select Disk
