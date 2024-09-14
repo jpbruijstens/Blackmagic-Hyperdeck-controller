@@ -2,12 +2,16 @@ from flask import Flask, render_template, request, jsonify
 import telnetlib
 import re
 import socket
+import logging
 
 app = Flask(__name__, static_url_path='/hyperdeck/static',
             static_folder='static')
 
 TELNET_IP = '10.1.12.201'
 TELNET_PORT = 9993
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 
 def send_telnet_command(command):
@@ -57,6 +61,7 @@ def hyperdeck():
                     return jsonify({'response': result['response']})
                 else:
                     return jsonify({'error': result['error']}), 500
+
             elif action == 'load_clips':
                 sort_by = request.form.get('sort_by')
                 result = send_telnet_command('clips get')
@@ -67,6 +72,7 @@ def hyperdeck():
                     return jsonify({'clips': clips})
                 else:
                     return jsonify({'error': result['error']}), 500
+
             elif action == 'search_clips':
                 query = request.form.get('query').lower()
                 search_by = request.form.get('search_by')
@@ -80,24 +86,34 @@ def hyperdeck():
                     return jsonify({'clips': filtered_clips})
                 else:
                     return jsonify({'error': result['error']}), 500
+
             elif action == 'play_loop':
                 result = send_telnet_command('play: loop: true')
                 if result['success']:
                     return jsonify({'response': 'Playback started in loop mode.'})
                 else:
                     return jsonify({'error': result['error']}), 500
+
             elif action == 'add_to_timeline':
-                clips = request.form.getlist('clips[]')
-                for clip_id in clips:
-                    result = send_telnet_command(f'goto: clip id: {clip_id}')
-                    if not result['success']:
-                        return jsonify({'error': result['error']}), 500
-                return jsonify({'response': 'Selected clips added to timeline.'})
+                clip_names = request.form.getlist('clips[]')
+                if clip_names:
+                    for clip_name in clip_names:
+                        # Send the command to add the clip by name
+                        result = send_telnet_command(
+                            f'clips add: name: {clip_name}')
+                        if not result['success']:
+                            return jsonify({'error': result['error']}), 500
+                    return jsonify({'response': 'Selected clips added to timeline.'})
+                else:
+                    return jsonify({'error': 'No clips selected.'}), 400
+
             else:
                 return jsonify({'error': 'Unknown action.'}), 400
+
         except Exception as e:
             app.logger.error(f"An error occurred: {e}")
             return jsonify({'error': f"An error occurred: {e}"}), 500
+
     return render_template('index.html')
 
 

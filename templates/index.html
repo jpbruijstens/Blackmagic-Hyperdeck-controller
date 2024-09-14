@@ -12,10 +12,9 @@
     <div class="top-banner">
         <div class="banner-content">
             <h1>HyperDeck Control</h1>
-            <!-- Message Display Area -->
-            <div id="message"></div>
             <!-- Controls -->
             <div class="controls">
+
                 <!-- Select Disk -->
                 <div class="control-group">
                     <label for="disk_id">Select Disk:</label>
@@ -25,10 +24,7 @@
                     </select>
                     <button id="select_disk">Select Disk</button>
                 </div>
-                <!-- Play Loop -->
-                <div class="control-group">
-                    <button id="play_loop">Play Loop</button>
-                </div>
+
                 <!-- Load Clips -->
                 <div class="control-group">
                     <label for="sort_by">Sort Clips by:</label>
@@ -39,10 +35,7 @@
                     </select>
                     <button id="load_clips">Load Clips</button>
                 </div>
-                <!-- Add to Timeline -->
-                <div class="control-group">
-                    <button id="add_to_timeline">Add Selected Clips to Timeline</button>
-                </div>
+
                 <!-- Search Bar -->
                 <div class="control-group">
                     <label for="search_query">Search:</label>
@@ -53,6 +46,19 @@
                     </select>
                     <button id="search_clips">Search</button>
                 </div>
+
+                <!-- Add to Timeline -->
+                <div class="control-group">
+                    <button id="add_to_timeline">Add Selected Clips to Timeline</button>
+                </div>
+
+                <!-- Play Loop -->
+                <div class="control-group">
+                    <button id="play_loop">Play Loop</button>
+                </div>           
+
+                <!-- Message Display Area -->
+                <div id="message"></div>
             </div>
         </div>
     </div>
@@ -151,20 +157,25 @@
                 });
             });
 
-            // Add Clips to Timeline
+            // Update the "Add Clips to Timeline" event handler
             $('#add_to_timeline').click(function(){
                 var selected_clips = [];
                 $('.clip_select:checked').each(function(){
-                    selected_clips.push($(this).val());
+                    selected_clips.push($(this).data('name'));
                 });
-                $.post('/hyperdeck', {action: 'add_to_timeline', clips: selected_clips}, function(data){
+                if(selected_clips.length === 0) {
+                    displayMessage("No clips selected.", true);
+                    return;
+                }
+                $.post('/hyperdeck', {action: 'add_to_timeline', 'clips[]': selected_clips}, function(data){
                     if(data.error){
                         displayMessage("Error: " + data.error, true);
                     } else {
                         displayMessage(data.response, false);
                     }
                 }).fail(function(jqXHR){
-                    displayMessage("Error: " + jqXHR.responseJSON.error, true);
+                    var errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.error : 'An error occurred.';
+                    displayMessage("Error: " + errorMsg, true);
                 });
             });
 
@@ -190,7 +201,7 @@
                 } else {
                     $.each(clips, function(i, clip){
                         var row = '<tr>';
-                        row += '<td><input type="checkbox" class="clip_select" value="'+clip.id+'"></td>';
+                        row += '<td><input type="checkbox" class="clip_select" value="'+clip.id+'" data-name="'+clip.name+'"></td>';
                         row += '<td>'+clip.name+'</td>';
                         row += '<td>'+clip.duration+'</td>';
                         row += '<td>'+clip.format+'</td>';
