@@ -8,6 +8,7 @@ app = Flask(__name__, static_url_path='/hyperdeck/static',
             static_folder='static')
 
 TELNET_IP = '172.19.0.3'
+# TELNET_IP = '10.1.12.201'
 TELNET_PORT = 9993
 
 # Configure logging

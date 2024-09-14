@@ -10,6 +10,7 @@ services:
     restart: always
     environment:
       - TELNET_IP=172.19.0.2
+#      - TELNET_IP=10.1.12.201
       - TELNET_PORT=9993
 
   mock-hyperdeck:
