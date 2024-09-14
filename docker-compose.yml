@@ -9,8 +9,17 @@ services:
       - hyperdeck-network
     restart: always
     environment:
-      - TELNET_IP=10.1.12.201
+      - TELNET_IP=172.19.0.2
       - TELNET_PORT=9993
+
+  mock-hyperdeck:
+    build:
+      context: ./mock_hyperdeck
+    networks:
+      - hyperdeck-network
+    restart: always
+    expose:
+      - "9993"
 
 networks:
   hyperdeck-network:

@@ -52,6 +52,11 @@
                     <button id="add_to_timeline">Add Selected Clips to Timeline</button>
                 </div>
 
+                <!-- New Control Group: Clear Timeline -->
+                <div class="control-group">
+                    <button id="clear_timeline">Clear Timeline</button>
+                </div>
+
                 <!-- Play Loop -->
                 <div class="control-group">
                     <button id="play_loop">Play Loop</button>
@@ -62,11 +67,16 @@
             </div>
         </div>
     </div>
-    
     <!-- Main Content -->
     <div class="main-content">
         <!-- Clips Table -->
         <h2>Clips</h2>
+        <!-- New Buttons for Select All and Deselect All -->
+        <div class="clip-controls">
+            <button id="select_all_clips">Select All</button>
+            <button id="deselect_all_clips">Deselect All</button>
+            <button id="remove_selected_clips">Remove Selected Clips</button>
+        </div>
         <table id="clips_table">
             <thead>
                 <tr>
@@ -81,7 +91,6 @@
             </tbody>
         </table>
     </div>
-    
     <!-- JavaScript -->
     <script>
         $(document).ready(function(){
@@ -179,6 +188,22 @@
                 });
             });
 
+            // Clear Timeline Event Handler
+            $('#clear_timeline').click(function(){
+                if(confirm("Are you sure you want to clear the timeline? This action cannot be undone.")) {
+                    $.post('/hyperdeck', {action: 'clear_timeline'}, function(data){
+                        if(data.error){
+                            displayMessage("Error: " + data.error, true);
+                        } else {
+                            displayMessage("Timeline cleared successfully.", false);
+                        }
+                    }).fail(function(jqXHR){
+                        var errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.error : 'An error occurred.';
+                        displayMessage("Error: " + errorMsg, true);
+                    });
+                }
+            });
+
             // Play Loop
             $('#play_loop').click(function(){
                 $.post('/hyperdeck', {action: 'play_loop'}, function(data){
@@ -208,6 +233,25 @@
                         row += '</tr>';
                         tbody.append(row);
                     });
+
+            // Select All Clips
+            $('#select_all_clips').click(function(){
+                $('.clip_select').prop('checked', true);
+            });
+
+            // Deselect All Clips
+            $('#deselect_all_clips').click(function(){
+                $('.clip_select').prop('checked', false);
+            });
+
+            // Remove Selected Clips
+            $('#remove_selected_clips').click(function(){
+                // Remove selected clips from the table
+                $('.clip_select:checked').each(function(){
+                    $(this).closest('tr').remove();
+                });
+                displayMessage("Selected clips have been removed.", false);
+            });
                 }
             }
         });
