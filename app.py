@@ -12,11 +12,9 @@ TELNET_PORT = 9993
 
 def send_telnet_command(command):
     try:
-        tn = telnetlib.Telnet(TELNET_IP, TELNET_PORT,
-                              timeout=5)  # Connection timeout
+        tn = telnetlib.Telnet(TELNET_IP, TELNET_PORT, timeout=5)
         tn.write(command.encode('ascii') + b"\n")
-        response = tn.read_until(b"\n", timeout=5).decode(
-            'ascii').strip()  # Read timeout
+        response = tn.read_until(b"\n", timeout=5).decode('ascii').strip()
         tn.close()
         return {'success': True, 'response': response}
     except socket.timeout:
@@ -69,6 +67,19 @@ def hyperdeck():
                     return jsonify({'clips': clips})
                 else:
                     return jsonify({'error': result['error']}), 500
+            elif action == 'search_clips':
+                query = request.form.get('query').lower()
+                search_by = request.form.get('search_by')
+                result = send_telnet_command('clips get')
+                if result['success']:
+                    clips = parse_clips_response(result['response'])
+                    filtered_clips = []
+                    for clip in clips:
+                        if query in clip.get(search_by, '').lower():
+                            filtered_clips.append(clip)
+                    return jsonify({'clips': filtered_clips})
+                else:
+                    return jsonify({'error': result['error']}), 500
             elif action == 'play_loop':
                 result = send_telnet_command('play: loop: true')
                 if result['success']:
@@ -91,4 +102,4 @@ def hyperdeck():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)

@@ -133,3 +133,29 @@ input[type="checkbox"] {
     font-size: 16px;
     margin-bottom: 20px;
 }
+
+/* Existing styles remain unchanged */
+
+/* Style for input fields */
+input[type="text"] {
+    background-color: #3a3a3a;
+    color: #ffffff;
+    border: none;
+    padding: 5px;
+    border-radius: 4px;
+    margin-right: 5px;
+}
+
+/* Adjust control group spacing */
+.control-group {
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+}
+
+/* Style for labels in control groups */
+.control-group label {
+    margin-right: 5px;
+}
+
+/* Responsive adjustments remain unchanged */

@@ -12,6 +12,8 @@
     <div class="top-banner">
         <div class="banner-content">
             <h1>HyperDeck Control</h1>
+            <!-- Message Display Area -->
+            <div id="message"></div>
             <!-- Controls -->
             <div class="controls">
                 <!-- Select Disk -->
@@ -41,8 +43,16 @@
                 <div class="control-group">
                     <button id="add_to_timeline">Add Selected Clips to Timeline</button>
                 </div>
-                <!-- Message Display Area -->
-                <div id="message" style="color: red; margin-top: 10px;"></div>
+                <!-- Search Bar -->
+                <div class="control-group">
+                    <label for="search_query">Search:</label>
+                    <input type="text" id="search_query" placeholder="Enter clip name or format">
+                    <select id="search_by">
+                        <option value="name">Name</option>
+                        <option value="format">Format</option>
+                    </select>
+                    <button id="search_clips">Search</button>
+                </div>
             </div>
         </div>
     </div>
@@ -96,19 +106,28 @@
                     if(data.error){
                         displayMessage("Error: " + data.error, true);
                     } else {
-                        var clips = data.clips;
-                        var tbody = $('#clips_table tbody');
-                        tbody.empty();
-                        $.each(clips, function(i, clip){
-                            var row = '<tr>';
-                            row += '<td><input type="checkbox" class="clip_select" value="'+clip.id+'"></td>';
-                            row += '<td>'+clip.name+'</td>';
-                            row += '<td>'+clip.duration+'</td>';
-                            row += '<td>'+clip.format+'</td>';
-                            row += '</tr>';
-                            tbody.append(row);
-                        });
+                        populateClipsTable(data.clips);
                         displayMessage("Clips loaded successfully.", false);
+                    }
+                }).fail(function(jqXHR){
+                    displayMessage("Error: " + jqXHR.responseJSON.error, true);
+                });
+            });
+
+            // Search Clips
+            $('#search_clips').click(function(){
+                var query = $('#search_query').val().trim();
+                var search_by = $('#search_by').val();
+                if(query === '') {
+                    displayMessage("Please enter a search query.", true);
+                    return;
+                }
+                $.post('/hyperdeck', {action: 'search_clips', query: query, search_by: search_by}, function(data){
+                    if(data.error){
+                        displayMessage("Error: " + data.error, true);
+                    } else {
+                        populateClipsTable(data.clips);
+                        displayMessage("Search completed.", false);
                     }
                 }).fail(function(jqXHR){
                     displayMessage("Error: " + jqXHR.responseJSON.error, true);
@@ -144,6 +163,25 @@
                     displayMessage("Error: " + jqXHR.responseJSON.error, true);
                 });
             });
+
+            // Function to populate the clips table
+            function populateClipsTable(clips) {
+                var tbody = $('#clips_table tbody');
+                tbody.empty();
+                if(clips.length === 0) {
+                    tbody.append('<tr><td colspan="4">No clips found.</td></tr>');
+                } else {
+                    $.each(clips, function(i, clip){
+                        var row = '<tr>';
+                        row += '<td><input type="checkbox" class="clip_select" value="'+clip.id+'"></td>';
+                        row += '<td>'+clip.name+'</td>';
+                        row += '<td>'+clip.duration+'</td>';
+                        row += '<td>'+clip.format+'</td>';
+                        row += '</tr>';
+                        tbody.append(row);
+                    });
+                }
+            }
         });
     </script>
 </body>
