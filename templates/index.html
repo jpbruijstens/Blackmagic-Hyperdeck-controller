@@ -2,66 +2,149 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hyperdeck Control</title>
-    <link rel="stylesheet" type="text/css" href="static/style.css">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <title>HyperDeck Control</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- jQuery CDN -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>Hyperdeck Control</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Clip Number</th>
-                <th>Filename</th>
-                <th>Format</th>
-                <th>Resolution</th>
-                <th>Duration</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for clip in clips %}
-            <tr>
-                <td>{{ clip.clip_number }}</td>
-                <td>{{ clip.filename }}</td>
-                <td>{{ clip.format }}</td>
-                <td>{{ clip.resolution }}</td>
-                <td>{{ clip.duration }}</td>
-                <td>
-                    <button onclick="playClip('{{ clip.filename }}')">Play</button>
-                    <button onclick="addToList('{{ clip.clip_number }}', '{{ clip.filename }}')">Add to List</button>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="6">No clips found</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
+    <!-- Top Banner -->
+    <div class="top-banner">
+        <div class="banner-content">
+            <h1>HyperDeck Control</h1>
+            <!-- Controls -->
+            <div class="controls">
+                <!-- Select Disk -->
+                <div class="control-group">
+                    <label for="disk_id">Select Disk:</label>
+                    <select id="disk_id">
+                        <option value="1">Disk 1</option>
+                        <option value="2">Disk 2</option>
+                    </select>
+                    <button id="select_disk">Select Disk</button>
+                </div>
+                <!-- Play Loop -->
+                <div class="control-group">
+                    <button id="play_loop">Play Loop</button>
+                </div>
+                <!-- Load Clips -->
+                <div class="control-group">
+                    <label for="sort_by">Sort Clips by:</label>
+                    <select id="sort_by">
+                        <option value="name">Name</option>
+                        <option value="duration">Duration</option>
+                        <option value="format">Format</option>
+                    </select>
+                    <button id="load_clips">Load Clips</button>
+                </div>
+                <!-- Add to Timeline -->
+                <div class="control-group">
+                    <button id="add_to_timeline">Add Selected Clips to Timeline</button>
+                </div>
+                <!-- Message Display Area -->
+                <div id="message" style="color: red; margin-top: 10px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Clips Table -->
+        <h2>Clips</h2>
+        <table id="clips_table">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Name</th>
+                    <th>Duration</th>
+                    <th>Format</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Clips will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- JavaScript -->
     <script>
-        function playClip(filename) {
-            $.post('/play', {filename: filename}, function(response) {
-                if (response.success) {
-                    alert('Playing clip ' + filename);
-                } else {
-                    alert('Failed to play clip ' + filename);
-                }
-            });
-        }
+        $(document).ready(function(){
+            function displayMessage(msg, isError) {
+                var messageDiv = $('#message');
+                messageDiv.css('color', isError ? 'red' : 'green');
+                messageDiv.text(msg);
+            }
 
-        function addToList(clipNumber, filename) {
-            $.post('/add_to_list', {clip_number: clipNumber, filename: filename}, function(response) {
-                if (response.success) {
-                    alert('Added clip ' + clipNumber + ' to list');
-                } else {
-                    alert('Failed to add clip ' + clipNumber + ' to list');
-                }
+            // Select Disk
+            $('#select_disk').click(function(){
+                var disk_id = $('#disk_id').val();
+                $.post('/hyperdeck', {action: 'select_disk', disk_id: disk_id}, function(data){
+                    if(data.error){
+                        displayMessage("Error: " + data.error, true);
+                    } else {
+                        displayMessage(data.response, false);
+                    }
+                }).fail(function(jqXHR){
+                    displayMessage("Error: " + jqXHR.responseJSON.error, true);
+                });
             });
-        }
+
+            // Load Clips
+            $('#load_clips').click(function(){
+                var sort_by = $('#sort_by').val();
+                $.post('/hyperdeck', {action: 'load_clips', sort_by: sort_by}, function(data){
+                    if(data.error){
+                        displayMessage("Error: " + data.error, true);
+                    } else {
+                        var clips = data.clips;
+                        var tbody = $('#clips_table tbody');
+                        tbody.empty();
+                        $.each(clips, function(i, clip){
+                            var row = '<tr>';
+                            row += '<td><input type="checkbox" class="clip_select" value="'+clip.id+'"></td>';
+                            row += '<td>'+clip.name+'</td>';
+                            row += '<td>'+clip.duration+'</td>';
+                            row += '<td>'+clip.format+'</td>';
+                            row += '</tr>';
+                            tbody.append(row);
+                        });
+                        displayMessage("Clips loaded successfully.", false);
+                    }
+                }).fail(function(jqXHR){
+                    displayMessage("Error: " + jqXHR.responseJSON.error, true);
+                });
+            });
+
+            // Add Clips to Timeline
+            $('#add_to_timeline').click(function(){
+                var selected_clips = [];
+                $('.clip_select:checked').each(function(){
+                    selected_clips.push($(this).val());
+                });
+                $.post('/hyperdeck', {action: 'add_to_timeline', clips: selected_clips}, function(data){
+                    if(data.error){
+                        displayMessage("Error: " + data.error, true);
+                    } else {
+                        displayMessage(data.response, false);
+                    }
+                }).fail(function(jqXHR){
+                    displayMessage("Error: " + jqXHR.responseJSON.error, true);
+                });
+            });
+
+            // Play Loop
+            $('#play_loop').click(function(){
+                $.post('/hyperdeck', {action: 'play_loop'}, function(data){
+                    if(data.error){
+                        displayMessage("Error: " + data.error, true);
+                    } else {
+                        displayMessage(data.response, false);
+                    }
+                }).fail(function(jqXHR){
+                    displayMessage("Error: " + jqXHR.responseJSON.error, true);
+                });
+            });
+        });
     </script>
 </body>
 </html>

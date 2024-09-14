@@ -1,57 +1,135 @@
+/* Reset body margins and padding */
 body {
+    background-color: #2b2b2b;
+    color: #ffffff;
     font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
     margin: 0;
     padding: 0;
 }
 
-h1 {
-    text-align: center;
-    padding: 20px;
-    color: #333;
-}
-
-table {
-    width: 80%;
-    margin: 20px auto;
-    border-collapse: collapse;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-th, td {
-    border: 1px solid #ddd;
-    padding: 12px;
-    text-align: center;
-}
-
-th {
-    background-color: #f4f4f4;
-    color: #333;
-}
-
-tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-tr:hover {
-    background-color: #f1f1f1;
-}
-
-button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
+/* Top Banner Styles */
+.top-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #1e1e1e;
     padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-    margin: 4px 2px;
+    box-sizing: border-box;
+    z-index: 1000;
+    border-bottom: 1px solid #444;
+}
+
+.banner-content {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.top-banner h1 {
+    margin: 0;
+    padding: 0;
+    margin-right: 20px;
+    font-size: 24px;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.control-group {
+    margin-right: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.control-group label {
+    margin-right: 5px;
+}
+
+.control-group select,
+.control-group button {
+    margin-right: 5px;
+}
+
+/* Main Content Styles */
+.main-content {
+    margin-top: 80px; /* Adjust this value based on the height of the top banner */
+    padding: 20px;
+}
+
+h2 {
+    color: #ffffff;
+    margin-top: 0;
+}
+
+/* Button Styles */
+button {
+    background-color: #3a3a3a;
+    color: #ffffff;
+    border: none;
+    padding: 8px 12px;
     cursor: pointer;
     border-radius: 4px;
 }
 
 button:hover {
-    background-color: #45a049;
+    background-color: #4a4a4a;
+}
+
+/* Select Styles */
+select {
+    background-color: #3a3a3a;
+    color: #ffffff;
+    border: none;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    color: #ffffff;
+}
+
+table, th, td {
+    border: 1px solid #555;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #3a3a3a;
+}
+
+input[type="checkbox"] {
+    transform: scale(1.2);
+}
+
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+    .banner-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .control-group {
+        margin-bottom: 10px;
+    }
+    
+    .control-group:last-child {
+        margin-right: 0;
+    }
+}
+
+#message {
+    font-size: 16px;
+    margin-bottom: 20px;
 }

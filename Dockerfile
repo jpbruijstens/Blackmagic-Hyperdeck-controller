@@ -1,23 +1,14 @@
-# Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
-
-# Install any needed packages specified in requirements.txt
+COPY requirements.txt requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install netcat (nc)
-RUN apt-get update && apt-get install -y netcat-openbsd
+COPY . .
 
-# Make the shell script executable
-RUN chmod +x hyperdeck.sh
-
-# Make port 5000 available to the world outside this container
+# Expose port 5000 (used internally by Gunicorn)
 EXPOSE 5000
 
-# Run app.py when the container launches
-CMD ["python", "app.py"]
+# Use Gunicorn as the WSGI server
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "4", "--timeout", "120", "app:app"]
