@@ -7,8 +7,8 @@ import logging
 app = Flask(__name__, static_url_path='/hyperdeck/static',
             static_folder='static')
 
-TELNET_IP = '172.19.0.3'
-# TELNET_IP = '10.1.12.201'
+# TELNET_IP = '172.19.0.3'
+TELNET_IP = '10.1.12.201'
 TELNET_PORT = 9993
 
 # Configure logging
@@ -55,15 +55,27 @@ def parse_clips_response(response):
     clips = []
     lines = response.strip().split('\n')
     clip_regex = re.compile(
-        r'clip id: (\d+) name: (.+?) duration: ([\d:]+) format: (.+)')
+        r'^(\d+):\s+'              # Clip ID
+        r'(.+?)\s+'                # Clip Name
+        r'(\S+)\s+'                # Format
+        r'(\S+)\s+'                # Resolution
+        r'(\d{2}:\d{2}:\d{2}[:;]\d{2})$'  # Duration with colon or semicolon
+    )
     for line in lines:
+        line = line.strip()
         match = clip_regex.match(line)
         if match:
+            clip_id = match.group(1)
+            name = match.group(2)
+            fmt = match.group(3)
+            resolution = match.group(4)
+            duration = match.group(5)
             clip = {
-                'id': match.group(1),
-                'name': match.group(2).strip(),
-                'duration': match.group(3).strip(),
-                'format': match.group(4).strip(),
+                'id': clip_id,
+                'name': name.strip(),
+                'format': fmt.strip(),
+                'resolution': resolution.strip(),
+                'duration': duration.strip(),
             }
             clips.append(clip)
         else:
@@ -88,7 +100,7 @@ def hyperdeck():
 
             elif action == 'load_clips':
                 sort_by = request.form.get('sort_by')
-                result = send_telnet_command('clips get')
+                result = send_telnet_command('disk list')
                 if result['success']:
                     clips = parse_clips_response(result['response'])
                     app.logger.info(f"Clips received: {clips}")
